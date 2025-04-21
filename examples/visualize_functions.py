@@ -5,8 +5,9 @@ This example demonstrates how to use the BasisFunctionVisualizer class
 to create 3D visualizations of polynomial basis functions.
 """
 
+import numpy as np
 from pynsfem.elements.components.basis import PolynomialBasisFunction
-from pynsfem.elements.components.domain import TriangleDomain
+from pynsfem.elements.components.domain import TriangleDomain, QuadrilateralDomain
 from pynsfem.visualization.basis_visualizer import BasisFunctionVisualizer
 
 
@@ -35,33 +36,46 @@ def main():
         [1.0, -1.0, -1.0, 1.0], [(1, 1), (2, 1), (1, 2), (2, 2)]
     )
 
+    # Create domain objects for visualization
+    # Standard triangle domain
+    triangle_domain = TriangleDomain(points=np.array([[0, 0], [1, 0], [0, 1]]), dim=2)
+
+    # Unit square domain
+    square_domain = QuadrilateralDomain(
+        points=np.array([[0, 0], [1, 0], [1, 1], [0, 1]]), dim=2
+    )
+
     # Visualize individual basis functions
     print("\nVisualizing individual basis functions...")
 
     # Visualize linear function
     visualizer.plot_basis_function(
-        linear_x, title="Linear Basis: f(x,y) = x", view_angles=(30, 45)
+        linear_x,
+        domain=triangle_domain,
+        title="Linear Basis: f(x,y) = x",
+        view_angles=(30, 45),
     )
 
     # Visualize quadratic function
     visualizer.plot_basis_function(
-        quadratic, title="Quadratic Basis: f(x,y) = x² + y²", view_angles=(30, 45)
+        quadratic,
+        domain=triangle_domain,
+        title="Quadratic Basis: f(x,y) = x² + y²",
+        view_angles=(30, 45),
     )
 
     # Visualize cubic bubble function
     visualizer.plot_basis_function(
         bubble,
+        domain=square_domain,
         title="Bubble Function: f(x,y) = x(1-x)y(1-y)",
-        x_range=(0, 1),
-        y_range=(0, 1),
         view_angles=(30, 45),
+        num_points=100,
     )
 
     # Visualize a function and its derivatives
     print("\nVisualizing a function and its derivatives...")
-    visualizer.plot_function_derivatives(
-        bubble, x_range=(0, 1), y_range=(0, 1), num_points=40
-    )
+    visualizer.plot_function_derivatives(bubble, domain=square_domain, num_points=100)
 
     # Visualize multiple basis functions in a grid
     print("\nVisualizing multiple basis functions in a grid...")
@@ -74,17 +88,17 @@ def main():
     ]
 
     visualizer.plot_basis_set(
-        basis_set, x_range=(0, 1), y_range=(0, 1), titles=titles, num_points=30
+        basis_set, domain=square_domain, titles=titles, num_points=100
     )
 
     # Show a wireframe plot for better visualization of shape
     print("\nWireframe visualization of the bubble function...")
     visualizer.plot_basis_function(
         bubble,
-        x_range=(0, 1),
-        y_range=(0, 1),
+        domain=square_domain,
         wireframe=True,
         title="Bubble Function Wireframe",
+        num_points=100,
     )
 
     print("Done!")

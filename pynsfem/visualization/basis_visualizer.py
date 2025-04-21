@@ -4,6 +4,7 @@ Visualization tools for basis functions in 3D using matplotlib
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import tri
 
 
 class BasisFunctionVisualizer:
@@ -25,37 +26,39 @@ class BasisFunctionVisualizer:
         self.fig_size = fig_size
         self.cmap = cmap
 
-    def sample_function(self, basis_function, x_range, y_range, num_points=50):
+    def sample_function(self, basis_function, domain, num_points=50):
         """
-        Sample a basis function on a rectangular grid
+        Sample a basis function on a domain
 
         Args:
             basis_function: The basis function to evaluate
-            x_range (tuple): Range of x values (min, max)
-            y_range (tuple): Range of y values (min, max)
-            num_points (int): Number of sample points in each direction
+            domain: Domain object with a sample(num_points) method
+            num_points (int): Number of sample points 
 
         Returns:
-            tuple: (X grid, Y grid, Z values)
+            tuple: (X coordinates, Y coordinates, Z values, triangulation indices)
         """
-        x = np.linspace(x_range[0], x_range[1], num_points)
-        y = np.linspace(y_range[0], y_range[1], num_points)
-        X, Y = np.meshgrid(x, y)
-        Z = np.zeros_like(X)
-
-        # Evaluate the basis function at each point in the grid
-        for i in range(X.shape[0]):
-            for j in range(X.shape[1]):
-                point = np.array([X[i, j], Y[i, j]])
-                Z[i, j] = basis_function.evaluate(point)
-
-        return X, Y, Z
+        # Get sample points from the domain
+        points = domain.sample(num_points)
+        
+        # Evaluate the basis function at each point
+        Z = np.zeros(len(points))
+        for i, point in enumerate(points):
+            Z[i] = basis_function.evaluate(point)
+            
+        # Split the coordinates for plotting
+        X = points[:, 0]
+        Y = points[:, 1]
+        
+        # Create a Delaunay triangulation
+        triangulation = tri.Triangulation(X, Y)
+        
+        return X, Y, Z, triangulation
 
     def plot_basis_function(
         self,
         basis_function,
-        x_range=(0, 1),
-        y_range=(0, 1),
+        domain,
         num_points=50,
         title=None,
         view_angles=None,
@@ -67,9 +70,8 @@ class BasisFunctionVisualizer:
 
         Args:
             basis_function: The basis function to plot
-            x_range (tuple): Range of x values (min, max)
-            y_range (tuple): Range of y values (min, max)
-            num_points (int): Number of sample points in each direction
+            domain: Domain object with a sample(num_points) method
+            num_points (int): Number of sample points
             title (str): Plot title, defaults to "Basis Function Visualization"
             view_angles (tuple): View angles (elevation, azimuth) in degrees
             wireframe (bool): Whether to plot as wireframe instead of surface
@@ -78,19 +80,19 @@ class BasisFunctionVisualizer:
         Returns:
             tuple: (figure, axis)
         """
-        X, Y, Z = self.sample_function(basis_function, x_range, y_range, num_points)
+        X, Y, Z, triangulation = self.sample_function(basis_function, domain, num_points)
 
         # Create the figure and 3D axis
         fig = plt.figure(figsize=self.fig_size)
         ax = fig.add_subplot(111, projection="3d")
 
-        # Plot the function
+        # Plot the function using triangulation
         if wireframe:
-            surf = ax.plot_wireframe(X, Y, Z, cmap=self.cmap)
+            surf = ax.plot_trisurf(X, Y, Z, triangles=triangulation.triangles, 
+                                  color='gray', alpha=0.5, linewidth=0.2)
         else:
-            surf = ax.plot_surface(
-                X, Y, Z, cmap=self.cmap, linewidth=0.2, antialiased=True
-            )
+            surf = ax.plot_trisurf(X, Y, Z, triangles=triangulation.triangles, 
+                                  cmap=self.cmap, linewidth=0.2, antialiased=True)
             fig.colorbar(surf, shrink=0.5, aspect=5)
 
         # Set labels and title
@@ -114,8 +116,7 @@ class BasisFunctionVisualizer:
     def plot_basis_set(
         self,
         basis_set,
-        x_range=(0, 1),
-        y_range=(0, 1),
+        domain,
         num_points=30,
         rows=None,
         cols=None,
@@ -127,9 +128,8 @@ class BasisFunctionVisualizer:
 
         Args:
             basis_set: List or collection of basis functions
-            x_range (tuple): Range of x values (min, max)
-            y_range (tuple): Range of y values (min, max)
-            num_points (int): Number of sample points in each direction
+            domain: Domain object with a sample(num_points) method
+            num_points (int): Number of sample points
             rows (int): Number of rows in the grid
             cols (int): Number of columns in the grid
             figsize (tuple): Figure size
@@ -169,9 +169,13 @@ class BasisFunctionVisualizer:
             axes.append(ax)
 
             # Sample and plot the function
-            X, Y, Z = self.sample_function(func, x_range, y_range, num_points)
-            surf = ax.plot_surface(
-                X, Y, Z, cmap=self.cmap, linewidth=0.1, antialiased=True
+            X, Y, Z, triangulation = self.sample_function(func, domain, num_points)
+            surf = ax.plot_trisurf(
+                X, Y, Z, 
+                triangles=triangulation.triangles,
+                cmap=self.cmap, 
+                linewidth=0.1, 
+                antialiased=True
             )
 
             # Set title if provided
@@ -192,8 +196,7 @@ class BasisFunctionVisualizer:
     def plot_function_derivatives(
         self,
         basis_function,
-        x_range=(0, 1),
-        y_range=(0, 1),
+        domain,
         num_points=30,
         include_function=True,
     ):
@@ -202,9 +205,8 @@ class BasisFunctionVisualizer:
 
         Args:
             basis_function: The basis function to plot
-            x_range (tuple): Range of x values (min, max)
-            y_range (tuple): Range of y values (min, max)
-            num_points (int): Number of sample points in each direction
+            domain: Domain object with a sample(num_points) method
+            num_points (int): Number of sample points
             include_function (bool): Whether to include the original function
 
         Returns:
@@ -227,9 +229,13 @@ class BasisFunctionVisualizer:
         # Plot the original function if requested
         if include_function:
             ax = fig.add_subplot(rows, cols, plot_idx, projection="3d")
-            X, Y, Z = self.sample_function(basis_function, x_range, y_range, num_points)
-            surf = ax.plot_surface(
-                X, Y, Z, cmap=self.cmap, linewidth=0.1, antialiased=True
+            X, Y, Z, triangulation = self.sample_function(basis_function, domain, num_points)
+            surf = ax.plot_trisurf(
+                X, Y, Z, 
+                triangles=triangulation.triangles,
+                cmap=self.cmap, 
+                linewidth=0.1, 
+                antialiased=True
             )
             ax.set_title("Original Function")
             ax.set_xlabel("x")
@@ -239,9 +245,13 @@ class BasisFunctionVisualizer:
         # Plot the derivatives
         for i, deriv in enumerate(gradient):
             ax = fig.add_subplot(rows, cols, plot_idx, projection="3d")
-            X, Y, Z = self.sample_function(deriv, x_range, y_range, num_points)
-            surf = ax.plot_surface(
-                X, Y, Z, cmap=self.cmap, linewidth=0.1, antialiased=True
+            X, Y, Z, triangulation = self.sample_function(deriv, domain, num_points)
+            surf = ax.plot_trisurf(
+                X, Y, Z, 
+                triangles=triangulation.triangles,
+                cmap=self.cmap, 
+                linewidth=0.1, 
+                antialiased=True
             )
             ax.set_title(f"∂/∂{['x', 'y', 'z'][i]}")
             ax.set_xlabel("x")
