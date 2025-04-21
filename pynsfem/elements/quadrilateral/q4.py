@@ -5,7 +5,7 @@ Q4 quadrangular element implementation
 import numpy as np
 from typing import Tuple, List, Callable
 from ...utils.quadrature import rect_gauss_points_weights
-from ..base import Element
+from ..element import Element
 
 
 class ElementQuadQ4(Element):

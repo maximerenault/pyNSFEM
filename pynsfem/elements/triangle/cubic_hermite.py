@@ -4,7 +4,7 @@ Cubic Hermite triangular element implementation
 
 import numpy as np
 from typing import Tuple, List, Callable
-from ..base import Element
+from ..element import Element
 
 
 class ElementTriCubicHermite(Element):

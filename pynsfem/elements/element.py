@@ -46,7 +46,7 @@ class Element(ABC):
         self.shape_functions = self._define_shape_functions()
 
     @property
-    def reference_element(self) -> Domain:
+    def reference_domain(self) -> Domain:
         """Returns the reference element coordinates"""
         return self.element_definition.domain
 
@@ -62,8 +62,8 @@ class Element(ABC):
 
     def _get_vandermonde_matrix(self) -> np.ndarray:
         """Returns the Vandermonde matrix"""
-        canonical_basis = self.element_definition.shape_function_space.basis
-        dofs = self.element_definition.nodal_basis
+        canonical_basis = self.shape_function_space.basis
+        dofs = self.degrees_of_freedom
         return np.array(
             [[dof(basis_func) for dof in dofs] for basis_func in canonical_basis]
         )
@@ -72,5 +72,5 @@ class Element(ABC):
         """Defines the shape functions for the element"""
         vandermonde = self._get_vandermonde_matrix()
         inv_mat = np.linalg.inv(vandermonde)
-        canonical_basis = self.element_definition.shape_function_space.basis
-        return canonical_basis.__rmatmul__(inv_mat)
+        canonical_basis = self.shape_function_space.basis
+        return inv_mat @ canonical_basis

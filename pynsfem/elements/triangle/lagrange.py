@@ -4,7 +4,7 @@ Any degree Lagrange triangular element implementation
 
 import numpy as np
 from typing import List
-from ..base import Element, ElementDefinition
+from ..element import Element, ElementDefinition
 from ..components.domain import TriangleDomain, DomainType
 from ..components.function_space import PolynomialSpace
 from ..components.dof import PointEvaluation

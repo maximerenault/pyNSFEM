@@ -83,6 +83,7 @@ class Basis(List[BasisFunction]):
     def __init__(self, *args: List[BasisFunction]):
         """Initialize the basis with a list of basis functions"""
         super().__init__(*args)
+        self.__array_priority__ = 100  # Higher priority for numpy operations
 
     def __matmul__(
         self, other: np.ndarray

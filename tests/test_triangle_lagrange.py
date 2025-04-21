@@ -21,7 +21,7 @@ class TestElementTriLagrange:
 
         # Check the reference coordinates are stored correctly
         assert_array_equal(
-            lag.element_definition.domain.reference_coordinates, vertices
+            lag.reference_domain.reference_coordinates, vertices
         )
 
     def test_shape_function_count(self):
@@ -69,9 +69,9 @@ class TestElementTriLagrange:
 
         # Verify default triangle setup
         expected_points = np.array([[0, 0], [1, 0], [0, 1]])
-        assert lag.element_definition.domain.reference_coordinates.shape == (3, 2)
+        assert lag.reference_domain.reference_coordinates.shape == (3, 2)
         assert_array_equal(
-            lag.element_definition.domain.reference_coordinates, expected_points
+            lag.reference_domain.reference_coordinates, expected_points
         )
 
     def test_lagrangian_property(self):
@@ -85,7 +85,7 @@ class TestElementTriLagrange:
         nodes = []
 
         # Nodes are contained in the nodal_basis
-        for dof in lag.element_definition.nodal_basis:
+        for dof in lag.degrees_of_freedom:
             nodes.append(dof.point)
         nodes = np.array(nodes)
 
@@ -126,12 +126,12 @@ class TestElementTriLagrange:
 
         # Check the reference coordinates are stored correctly
         assert_array_equal(
-            lag.element_definition.domain.reference_coordinates, vertices
+            lag.reference_domain.reference_coordinates, vertices
         )
 
         # Instead of testing directly at vertices, obtain the actual DOF points from the element
         nodes = []
-        for dof in lag.element_definition.nodal_basis:
+        for dof in lag.degrees_of_freedom:
             nodes.append(dof.point)
         nodes = np.array(nodes)
 
@@ -173,7 +173,7 @@ class TestElementTriLagrange:
 
         # Get the DOF points from the element
         nodes = []
-        for dof in lag.element_definition.nodal_basis:
+        for dof in lag.degrees_of_freedom:
             nodes.append(dof.point)
         nodes = np.array(nodes)
 
