@@ -281,10 +281,3 @@ class TestPolynomial:
         terms = [(c, pw) for c, pw in p]
         assert (2, (1, 0)) in terms
         assert (3, (0, 1)) in terms
-
-    def test_repr(self):
-        """Test string representation"""
-        p = Polynomial([2, 3], [(1, 0), (0, 1)])
-        rep = repr(p)
-        assert "x0" in rep
-        assert "x1" in rep

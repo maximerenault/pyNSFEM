@@ -5,10 +5,10 @@ Q4 quadrangular element implementation
 import numpy as np
 from typing import Tuple, List, Callable
 from ...utils.quadrature import rect_gauss_points_weights
-from ..base import QuadElement
+from ..base import Element
 
 
-class ElementQuadQ4(QuadElement):
+class ElementQuadQ4(Element):
     """Q4 quadrangular element with 4 DOF:
     - Point evaluation at each corner
     """

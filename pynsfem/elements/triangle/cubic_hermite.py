@@ -4,12 +4,10 @@ Cubic Hermite triangular element implementation
 
 import numpy as np
 from typing import Tuple, List, Callable
-from ...utils.poly_basis import tri_poly_basis_auto
-from ...utils.quadrature import tri_gauss_points_weights
-from ..base import TriElement
+from ..base import Element
 
 
-class ElementTriCubicHermite(TriElement):
+class ElementTriCubicHermite(Element):
     """Cubic Hermite triangular element with 10 DOF:
     - Point evaluation at each corner
     - Gradient evaluation at each corner

@@ -8,6 +8,7 @@ from enum import Enum, auto
 from ...utils.decorators import memoize
 import numpy as np
 
+Symbols = ["x", "y", "z"]
 
 class BasisFunctionType(Enum):
     """Types of basis functions"""
@@ -220,10 +221,12 @@ class PolynomialBasisFunction(BasisFunction):
             for i, p in enumerate(power):
                 if p == 0:
                     continue
-                elif p == 1:
-                    term += f"x{i} "
+                repetitions = i//len(Symbols) + 1
+                real_i = i%len(Symbols)
+                if p == 1:
+                    term += repetitions*Symbols[real_i] + " "
                 elif p > 0:
-                    term += f"x{i}^{p} "
+                    term += repetitions*Symbols[real_i] + f"^{p} "
             terms.append(term)
         return " + ".join(terms)
 

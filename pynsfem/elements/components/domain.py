@@ -50,11 +50,11 @@ class Domain:
 class TriangleDomain(Domain):
     """Triangle element domain"""
     
-    def __init__(self):
+    def __init__(self, points: np.ndarray, dim: int):
         super().__init__(
             domain_type=DomainType.TRIANGLE,
-            reference_coordinates=np.array([[0, 0], [1, 0], [0, 1]]),
-            dimension=2
+            reference_coordinates=points,
+            dimension=dim
         )
     
     def compute_jacobian(self, nodal_coordinates: np.ndarray) -> np.ndarray:

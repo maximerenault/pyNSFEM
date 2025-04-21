@@ -6,8 +6,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from .basis import Basis, PolynomialBasisFunction
 from .domain import DomainType
-from ...utils.decorators import memoize
-from ...utils.function_space import power_tuples_max, power_tuples_sum
+from ...utils.power_tuples import power_tuples_max, power_tuples_sum
 
 
 class FunctionSpaceType(Enum):
@@ -37,47 +36,39 @@ class FunctionSpace:
 class PolynomialSpace(FunctionSpace):
     """Polynomial function space of given degree"""
 
-    def __init__(self, degree: int, dim: int, domainType: DomainType):
+    def __init__(self, degree: int, domainType: DomainType):
         """Initialize polynomial space
 
         Args:
             degree: Polynomial degree
-            dim: Dimension of the embedding space
             domain: Domain of the element
         """
         self._degree = degree
         self._domainType = domainType
-        self._dim = dim
+        basis = self.canonical_basis()
         super().__init__(
             space_type=FunctionSpaceType.POLYNOMIAL,
-            basis=self.canonical_basis,
-            dimension=len(self.canonical_basis),
+            basis=basis,
+            dimension=len(basis),
         )
 
-    @property
-    @memoize
     def canonical_basis(self) -> Basis:
         """Computes the canonical basis for the polynomial space"""
+        power_tuples = []
         if self._domainType == DomainType.TRIANGLE:
             """
             The degree of the basis functions is equal to the sum of the powers of the leading term
             example: for degree 2, the basis functions are:
             e_0 = 1, e_1 = x, e_2 = y, e_3 = x^2, e_4 = xy, e_5 = y^2
             """
-            power_pairs = []
             for power in range(self._degree + 1):
-                power_pairs += list(power_tuples_sum(2, power))
-            cano_basis = Basis([PolynomialBasisFunction([1], [p]) for p in power_pairs])
-            return cano_basis
+                power_tuples += list(power_tuples_sum(2, power))
         elif self._domainType == DomainType.TETRAHEDRON:
             """
             Same as for triangle, but in 3D
             """
-            power_pairs = []
             for power in range(self._degree + 1):
-                power_pairs += list(power_tuples_sum(3, power))
-            cano_basis = Basis([PolynomialBasisFunction([1], [p]) for p in power_pairs])
-            return cano_basis
+                power_tuples += list(power_tuples_sum(3, power))
         elif self._domainType == DomainType.QUADRILATERAL:
             """
             The degree of the basis functions is equal to the max of the powers of the leading term
@@ -85,25 +76,21 @@ class PolynomialSpace(FunctionSpace):
             e_0 = 1, e_1 = x, e_2 = y, e_3 = xy, e_4 = x^2,
             e_5 = y^2, e_6 = x^2y, e_7 = xy^2, e_8 = x^2y^2
             """
-            power_pairs = []
             for power in range(self._degree + 1):
-                power_pairs += list(power_tuples_max(2, power))
-            cano_basis = Basis([PolynomialBasisFunction([1], [p]) for p in power_pairs])
-            return cano_basis
+                power_tuples += list(power_tuples_max(2, power))
         elif self._domainType == DomainType.HEXAHEDRON:
             """
             Same as for quadrilateral, but in 3D
             """
-            power_pairs = []
             for power in range(self._degree + 1):
-                power_pairs += list(power_tuples_max(3, power))
-            cano_basis = Basis([PolynomialBasisFunction([1], [p]) for p in power_pairs])
-            return cano_basis
+                power_tuples += list(power_tuples_max(3, power))
         else:
             raise NotImplementedError(
                 f"Canonical basis not implemented for domain type {self._domainType}"
             )
+        cano_basis = Basis([PolynomialBasisFunction([1], [p]) for p in power_tuples])
+        return cano_basis
 
     def __repr__(self) -> str:
         """String representation of the polynomial space"""
-        return f"PolynomialSpace(degree={self.degree}, dimension={self.dimension})"
+        return f"PolynomialSpace(degree={self._degree}, dimension={self.dimension})"

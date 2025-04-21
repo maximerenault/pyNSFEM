@@ -4,7 +4,7 @@ Nodal basis (degrees of freedom) for finite elements
 
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Callable, Optional, Union
+from typing import List, Union
 import numpy as np
 from enum import Enum, auto
 from .basis import BasisFunction
